@@ -3,8 +3,6 @@ import demoji
 import logging
 import re
 
-
-matches=[]
 exclude_list = []
 with open('exclude_list.txt') as reader:
     for word in reader:
@@ -38,25 +36,23 @@ def is_symbol_excluded(symbol):
     else:
         return False
 
-with open('sample_data.csv', newline='') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            words = preprocess_and_split_text(row["title"])
-            for word in words:
-                if((1<= len(word) <=5)):
-                    if(is_dollar_sign_match(word)):
-                        symbol = remove_non_uppercase_characters(word)
-                        if(is_symbol_excluded(symbol)):
-                            logging.debug(f"Symbol {symbol} was on the exclude list")
-                        else:  
-                            matches.append(symbol)
-                    elif (is_full_symbol_match(word)):
-                        symbol = remove_non_uppercase_characters(word)
-                        if(is_symbol_excluded(symbol)):
-                            logging.debug(f"Symbol {symbol} was on the exclude list")
-                        else:
-                            matches.append(symbol)
-                    else:
-                        logging.debug(f"No pattern match found for {word}")
-
-print(matches)
+def extract_tickers(text):
+    matches=[]
+    words = preprocess_and_split_text(text)
+    for word in words:
+        if((1<= len(word) <=5)):
+            if(is_dollar_sign_match(word)):
+                symbol = remove_non_uppercase_characters(word)
+                if(is_symbol_excluded(symbol)):
+                    logging.debug(f"Symbol {symbol} was on the exclude list")
+                else:  
+                    matches.append(symbol)
+            elif (is_full_symbol_match(word)):
+                symbol = remove_non_uppercase_characters(word)
+                if(is_symbol_excluded(symbol)):
+                    logging.debug(f"Symbol {symbol} was on the exclude list")
+                else:
+                    matches.append(symbol)
+            else:
+                logging.debug(f"No pattern match found for {word}")
+    return matches

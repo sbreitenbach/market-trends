@@ -60,8 +60,39 @@ def test_is_symbol_excluded():
     b = parser.is_symbol_excluded(a)
     assert(b==True)
 
-
 def test_is_symbol_not_excluded():
     a="GME"
     b = parser.is_symbol_excluded(a)
     assert(b==False)
+
+def test_single_extract_tickers():
+    a="buy GME"
+    b = parser.extract_tickers(a)
+    assert(b==['GME'])
+
+def test_mutliple_extract_tickers():
+    a="buy GME and PLTR"
+    b = parser.extract_tickers(a)
+    assert(b==['GME','PLTR'])
+
+def test_extract_tickers_with_excludsions():
+    a="Complete PLTR DD ahead of Demo Day (Valuation Included)"
+    b = parser.extract_tickers(a)
+    assert(b==['PLTR'])
+
+def test_extract_tickers_no_matchs():
+    a="ETF Data center REIT surefire or am I wrong?"
+    b = parser.extract_tickers(a)
+    assert(b==[])
+
+
+#TODO failed cases
+"""
+3K - 13K in 4 months. All stocks, no options. Can you tell when I stopped trading like a boomer? ['K', 'K']
+Is it really this easy to get on the train? (GME) []
+Thoughts on $CLOV? []
+Clover Health ($CLOV) will moon soon []
+Doing research on AFRM's S-1... what do you think about the stock []
+Defense Stocks (LMT, RTX, NOC, GD, BA) ['RTX', 'NOC', 'GD', 'BA']
+Is it too late to invest in GME, BB, PLTR, and AMC? I have been seeing a lot of hype around these stocks but am afraid I do not understand. ['GME', 'BB', 'AMC']
+"""

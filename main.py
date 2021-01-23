@@ -1,5 +1,7 @@
+import analyzer
 import json
 import logging
+import parser
 import praw
 
 ##Begin Config##
@@ -10,8 +12,16 @@ logging.basicConfig(filename='log.log',
                     level=logging.DEBUG)
 ##End Config##
 
-def returns_true():
-    return True
+
+def get_reddit_data(subreddits,number_of_posts):
+    submissions = []
+    reddit = praw.Reddit(client_id=my_client_id, client_secret=my_client_secret,
+                        password=my_password, user_agent=my_user_agent,
+                        username=my_username)
+    for subreddit in subreddits:
+        for submission in reddit.subreddit(subreddit).hot(limit=number_of_posts):
+            submissions.append(submission.title)
+    return submissions
 
 if __name__ == '__main__':
     with open('secretConfig.json') as json_file:
@@ -26,11 +36,11 @@ if __name__ == '__main__':
         my_user_agent=data["reddit"]["user_agent"]
         my_subreddits=data["reddit"]["subreddits"]
 
-
-    reddit = praw.Reddit(client_id=my_client_id, client_secret=my_client_secret,
-                        password=my_password, user_agent=my_user_agent,
-                        username=my_username)
-
-    for subreddit in my_subreddits:
-        for submission in reddit.subreddit(subreddit).hot(limit=20):
-            print(subreddit,submission.title, submission.score, submission.upvote_ratio)
+    posts = get_reddit_data(my_subreddits,50)
+    tickers = []
+    for post in posts:
+        extracted_tickers = parser.extract_tickers(post)
+        for ticker in extracted_tickers:
+            tickers.append(ticker)
+    
+    print(analyzer.count_tickers(tickers))
