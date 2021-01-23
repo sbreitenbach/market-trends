@@ -54,3 +54,14 @@ def test_is_not_full_symbol_match_with_lowercase():
     a="gme"
     b = parser.is_full_symbol_match(a)
     assert(b==False)
+
+def test_is_symbol_excluded():
+    a="ATH"
+    b = parser.is_symbol_excluded(a)
+    assert(b==True)
+
+
+def test_is_symbol_not_excluded():
+    a="GME"
+    b = parser.is_symbol_excluded(a)
+    assert(b==False)
