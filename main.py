@@ -42,5 +42,5 @@ if __name__ == '__main__':
         extracted_tickers = parser.extract_tickers(post)
         for ticker in extracted_tickers:
             tickers.append(ticker)
-    
+
     print(analyzer.count_tickers(tickers))

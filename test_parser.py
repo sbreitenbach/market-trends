@@ -40,6 +40,22 @@ def test_remove_non_uppercase_characters_with_spaces():
     b = parser.remove_non_uppercase_characters(a)
     assert(b=="GME")
 
+def test_remove_non_uppercase_or_dollar_characters_with_question_mark():
+    a="$CLOV?"
+    b=parser.remove_non_uppercase_or_dollar_characters(a)
+    #print(b)
+    assert(b=="$CLOV")
+
+def test_remove_non_uppercase_or_dollar_characters_with_parentheses():
+    a="($CLOV)"
+    b=parser.remove_non_uppercase_or_dollar_characters(a)
+    assert(b=="$CLOV")
+
+def test_remove_non_uppercase_or_dollar_characters_with_apostrophe():
+    a="AFRM's"
+    b=parser.remove_non_uppercase_or_dollar_characters(a)
+    assert(b=="AFRM")
+
 def test_is_full_symbol_match():
     a="GME"
     b = parser.is_full_symbol_match(a)
@@ -85,8 +101,22 @@ def test_extract_tickers_no_matchs():
     b = parser.extract_tickers(a)
     assert(b==[])
 
+def test_extract_tickers_with_parentheses():
+    a="Clover Health ($CLOV) will moon soon"
+    b = parser.extract_tickers(a)
+    assert(b==['CLOV'])
 
-#TODO failed cases
+def test_extract_tickers_with_question():
+    a="Thoughts on $CLOV?"
+    b = parser.extract_tickers(a)
+    assert(b==['CLOV'])
+
+def test_extract_tickers_with_multiple_matches_and_parentheses():
+    a="Defense Stocks (LMT, RTX, NOC, GD, BA) should I invest in them OR GME?"
+    b = parser.extract_tickers(a)
+    assert(b==['LMT','RTX','NOC','GD','BA','GME'])
+
+#failed cases
 """
 3K - 13K in 4 months. All stocks, no options. Can you tell when I stopped trading like a boomer? ['K', 'K']
 Is it really this easy to get on the train? (GME) []
