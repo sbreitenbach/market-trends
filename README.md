@@ -1,15 +1,4 @@
-# python-quick-start
-## Template for Python Repos with the following:
+# market-trends
+## A Script to Look for Trends in the Market
 
-### main.py script
-1. Has logging setup
-2. Script will print a simple hello world
-
-### Test of main.py
-1. Contains two sample tests that are passing
-
-### Misc
-1. Readme
-2. License
-3, Codeowners
-4. Gitignore
+### NOT MEANT AS FINIACIAL ADVICE

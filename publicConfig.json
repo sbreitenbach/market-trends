@@ -1,0 +1,6 @@
+{
+    "reddit":{
+        "user_agent":"market-trends 0.1.0",
+        "subreddits":["wallstreetbets","stocks","investing"]
+    }
+}
