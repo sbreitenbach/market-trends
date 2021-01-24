@@ -1,6 +1,9 @@
 {
     "reddit":{
         "user_agent":"market-trends 0.1.0",
-        "subreddits":["wallstreetbets","stocks","investing"]
+        "subreddits":["wallstreetbets","stocks","investing"],
+        "number_of_posts_to_crawl":20,
+        "number_of_comments_to_crawl":5,
+        "number_of_tickers_to_include":20
     }
 }

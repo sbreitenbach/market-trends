@@ -65,4 +65,3 @@ def extract_tickers(text):
             logging.debug(f"No pattern match found for {word}")
 
     return matches
-
