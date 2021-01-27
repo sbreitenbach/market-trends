@@ -1,4 +1,4 @@
-import parser
+import demoji
 from collections import Counter
 
 def count_tickers(tickers):
@@ -8,10 +8,18 @@ def count_tickers(tickers):
 def most_common_tickers(tickers,maximum):
     result = tickers.most_common(maximum)
     return result
+    
+def preprocess_and_split_text(text):
+    wordlist = []
+    text_without_emojis = demoji.replace_with_desc(text,sep=" ")
+    words = text_without_emojis.split()
+    for word in words:
+        wordlist.append(word.lower())
+    return wordlist
 
 def has_positive_words(text):
     positive_words=['call','calls','bull','bulls''bullish','moon','diamond','liftoff','yolo','rocket','hold','holding']
-    words = parser.preprocess_and_split_text(text)
+    words = preprocess_and_split_text(text)
     if(any(item in words for item in positive_words)):
         return True
     else:
@@ -19,7 +27,7 @@ def has_positive_words(text):
 
 def has_negative_words(text):
     negative_words=['bear','bears','bearish','put','puts','rainbow','short','sell']
-    words = parser.preprocess_and_split_text(text)
+    words = preprocess_and_split_text(text)
     if(any(item in words for item in negative_words)):
         return True
     else:

@@ -42,13 +42,19 @@ def test_has_negative_words_true():
     a='put'
     b=analyzer.has_negative_words(a)
     assert(b==True)
-
+-
 def test_has_negative_words_false_with_emoji():
     a='🐻'
     b=analyzer.has_negative_words(a)
-    assert(b==False)
+    assert(b==True)
 
 def test_has_negative_words_true_with_capitals():
     a='SELL NOW'
     b=analyzer.has_negative_words(a)
     assert(b==True)
+
+def test_preprocess_and_split_text():
+    a = "HELLO WORLD 🚀"
+    b = analyzer.preprocess_and_split_text(a)
+    c = ['hello','world','rocket']
+    assert(b==c)
