@@ -19,7 +19,7 @@ def preprocess_and_split_text(text):
     return wordlist
 
 def has_positive_words(text):
-    positive_words=['call','calls','bull','bulls''bullish','moon','diamond','liftoff','yolo','rocket','hold','holding']
+    positive_words=['call','calls','bull','bulls''bullish','diamond','gem','hold','holding','liftoff','moon','rocket','yolo']
     words = preprocess_and_split_text(text)
     if(any(item in words for item in positive_words)):
         return True
@@ -27,7 +27,7 @@ def has_positive_words(text):
         return False
 
 def has_negative_words(text):
-    negative_words=['bear','bears','bearish','put','puts','rainbow','short','sell']
+    negative_words=['bear','bears','bearish','imagine','put','puts','rainbow','sell','short']
     words = preprocess_and_split_text(text)
     if(any(item in words for item in negative_words)):
         return True
@@ -41,4 +41,17 @@ def get_VADER_score(text):
     return compound_score
     
 def determine_sentiment(text):
-    return
+    VADER_score = get_VADER_score(text)
+    if(has_negative_words(text) and has_positive_words(text)):
+        return VADER_score
+    elif(has_positive_words(text)):
+        adjusted_score = VADER_score + .02
+        return adjusted_score
+    elif(has_negative_words(text)):
+        adjusted_score = VADER_score - .02
+        return adjusted_score
+    else:
+        return VADER_score
+
+a="THIS STOCK IS THE BEST 💎🙌 BABY!!!"
+print (determine_sentiment(a))

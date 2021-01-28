@@ -68,3 +68,13 @@ def test_get_VADER_score_negative():
     a = "this is not a good investment, i lost everything 😔"
     b = analyzer.get_VADER_score(a)
     assert(b<0)
+
+def test_determine_sentiment_positive():
+    a="THIS STOCK IS THE BEST 💎🙌 BABY!!!"
+    b=analyzer.determine_sentiment(a)
+    assert(b>0)
+
+def test_determine_sentiment_negative():
+    a="imagine thinking this is a good investment 😭"
+    b=analyzer.determine_sentiment(a)
+    assert(b<0)
