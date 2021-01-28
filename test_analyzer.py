@@ -42,7 +42,7 @@ def test_has_negative_words_true():
     a='put'
     b=analyzer.has_negative_words(a)
     assert(b==True)
--
+
 def test_has_negative_words_false_with_emoji():
     a='🐻'
     b=analyzer.has_negative_words(a)
@@ -58,3 +58,13 @@ def test_preprocess_and_split_text():
     b = analyzer.preprocess_and_split_text(a)
     c = ['hello','world','rocket']
     assert(b==c)
+
+def test_get_VADER_score_positive():
+    a = "THIS STOCK IS THIS BEST IT IS GOING TO THE MOON!!! 🚀"
+    b = analyzer.get_VADER_score(a)
+    assert(b>0)
+
+def test_get_VADER_score_negative():
+    a = "this is not a good investment, i lost everything 😔"
+    b = analyzer.get_VADER_score(a)
+    assert(b<0)

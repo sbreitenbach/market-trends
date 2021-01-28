@@ -1,5 +1,6 @@
 import demoji
 from collections import Counter
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 def count_tickers(tickers):
     result = Counter(tickers)
@@ -33,5 +34,11 @@ def has_negative_words(text):
     else:
         return False
 
+def get_VADER_score(text):
+    VADER_analyzer = SentimentIntensityAnalyzer()
+    vs = VADER_analyzer.polarity_scores(text)
+    compound_score = vs['compound']
+    return compound_score
+    
 def determine_sentiment(text):
     return
