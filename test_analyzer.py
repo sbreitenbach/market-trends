@@ -78,3 +78,14 @@ def test_determine_sentiment_negative():
     a="imagine thinking this is a good investment 😭"
     b=analyzer.determine_sentiment(a)
     assert(b<0)
+
+def calculate_net_sentiment():
+    a=[('GME',3),('BB',2)]
+    b = [['GME',"THIS STOCK IS THIS BEST IT IS GOING TO THE MOON!!! 🚀"],
+        ['GME',"THIS STOCK IS THIS BEST IT IS GOING TO THE MOON!!! 🚀"],
+        ['GME',"THIS STOCK IS THIS BEST IT IS GOING TO THE MOON!!! 🚀"],
+        ['BB',"this is not a good investment, i lost everything 😔"],
+        ['BB',"this is not a good investment, i lost everything 😔"]]
+    c = [{'GME': {'mentions': 3, 'sentiment': 0.8513}}, {'BB': {'mentions': 2, 'sentiment': -0.5277}}]
+    d = analyzer.calculate_net_sentiment(a,b)
+    assert(c==d)
