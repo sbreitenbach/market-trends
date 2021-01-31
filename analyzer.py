@@ -23,7 +23,7 @@ def preprocess_and_split_text(text):
 
 
 def has_positive_words(text):
-    positive_words = ['call', 'calls', 'bull', 'bulls''bullish', 'diamond',
+    positive_words = ['call', 'calls', 'bull', 'bulls', 'bullish', 'diamond',
                       'gem', 'hold', 'holding', 'liftoff', 'moon', 'rocket', 'yolo']
     words = preprocess_and_split_text(text)
     if(any(item in words for item in positive_words)):
@@ -42,7 +42,7 @@ def has_negative_words(text):
         return False
 
 
-def get_VADER_score(text):
+def get_vader_score(text):
     VADER_analyzer = SentimentIntensityAnalyzer()
     vs = VADER_analyzer.polarity_scores(text)
     compound_score = vs['compound']
@@ -54,7 +54,7 @@ def get_VADER_score(text):
 
 
 def determine_sentiment(text):
-    VADER_score = get_VADER_score(text)
+    VADER_score = get_vader_score(text)
     if(has_negative_words(text) and has_positive_words(text)):
         return VADER_score
     elif(has_positive_words(text)):
