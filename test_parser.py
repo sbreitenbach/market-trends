@@ -1,5 +1,7 @@
 import parser
+import demoji
 
+demoji.download_codes()
 def test_is_valid_dollar_sign_match():
     a="$GME"
     b = parser.is_dollar_sign_match(a)

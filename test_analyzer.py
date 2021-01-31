@@ -1,5 +1,8 @@
 import analyzer
+import demoji
 from collections import Counter
+
+demoji.download_codes()
 
 def test_count_tickers():
     a = ['GME','BB','GME','MSFT','BB','GME']
