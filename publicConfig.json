@@ -1,6 +1,6 @@
 {
     "reddit": {
-        "user_agent": "market-trends 0.3.0",
+        "user_agent": "market-trends 1.0.0",
         "subreddits": [
             "investing",
             "options",
