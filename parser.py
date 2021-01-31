@@ -90,7 +90,7 @@ def extract_tickers(text):
     for word in words:
         if(word.isupper()):
             stripped_word = remove_non_uppercase_or_dollar_characters(word)
-            if((1 <= len(stripped_word) <= 5)):
+            if(1 <= len(stripped_word) <= 5):
                 if(is_dollar_sign_match(stripped_word)):
                     symbol = remove_non_uppercase_characters(stripped_word)
                     if(is_symbol_excluded(symbol)):
