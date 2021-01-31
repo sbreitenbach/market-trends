@@ -10,6 +10,16 @@ def test_not_valid_dollar_sign_match():
     b = parser.is_dollar_sign_match(a)
     assert(b==False)
 
+def test_not_valid_dollar_sign_match_with_call_abbreviation():
+    a="$65C"
+    b = parser.is_dollar_sign_match(a)
+    assert(b==False)
+
+def test_not_valid_dollar_sign_match_with_put_abbreviation():
+    a="$50P"
+    b = parser.is_dollar_sign_match(a)
+    assert(b==False)
+
 def test_preprocess_and_split_text_with_emojis():
     a="bottle 🚀"
     b = parser.preprocess_and_split_text(a)
