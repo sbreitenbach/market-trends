@@ -1,4 +1,7 @@
 # market-trends
+[![Build Status](https://dev.azure.com/scottbreitenbach/scottbreitenbach/_apis/build/status/sbreitenbach.market-trends?branchName=main)](https://dev.azure.com/scottbreitenbach/scottbreitenbach/_build/latest?definitionId=4&branchName=master)  [![Version](https://img.shields.io/github/v/release/sbreitenbach/market-trends)](https://img.shields.io/github/v/release/sbreitenbach/market-trends)
+
+
 ## A Script to Look for Trends in the Market
 
 ### THIS IS NOT FINIACIAL ADVICE
