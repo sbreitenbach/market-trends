@@ -11,7 +11,7 @@ logging.basicConfig(filename='log.log',
                     filemode='a',
                     format='%(asctime)s %(levelname)s %(funcName)s %(lineno)d %(message)s',
                     datefmt="%Y-%m-%dT%H:%M:%S%z",
-                    level=logging.DEBUG)
+                    level=logging.INFO)
 ##End Config##
 
 
@@ -52,17 +52,21 @@ if __name__ == '__main__':
         my_number_of_comments_to_crawl=data["reddit"]["number_of_comments_to_crawl"]
         my_number_of_tickers_to_include=data["reddit"]["number_of_tickers_to_include"]
 
-    print("Getting data from reddit")
-    #TODO clean up "posts" naming convention
+    print("Getting data from reddit...")
+    logging.info("Getting data from reddit")
+    #TODO clean up "posts" and "symbols" naming convention
     posts = get_reddit_data(my_subreddits,my_number_of_posts_to_crawl,my_number_of_comments_to_crawl)
     tickers = []
     post_list = []
-    print("Processing data...")
+    count_of_posts=len(posts)
+    print(f"Processing data for {count_of_posts} posts...")
     for post in posts:
         extracted_tickers = parser.extract_tickers(post)
         for ticker in extracted_tickers:
             tickers.append(ticker)
             post_list.append([ticker,post])
+    count_of_tickers = len(tickers)
+    print(f"Found {count_of_tickers} tickers, starting analysis...")
     ticker_occurances = analyzer.count_tickers(tickers)
     most_common_tickers = analyzer.most_common_tickers(ticker_occurances,my_number_of_tickers_to_include)
     print(analyzer.calculate_net_sentiment(most_common_tickers,post_list))
