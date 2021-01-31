@@ -52,12 +52,17 @@ if __name__ == '__main__':
         my_number_of_comments_to_crawl=data["reddit"]["number_of_comments_to_crawl"]
         my_number_of_tickers_to_include=data["reddit"]["number_of_tickers_to_include"]
 
+    print("Getting data from reddit")
+    #TODO clean up "posts" naming convention
     posts = get_reddit_data(my_subreddits,my_number_of_posts_to_crawl,my_number_of_comments_to_crawl)
     tickers = []
+    post_list = []
+    print("Processing data...")
     for post in posts:
         extracted_tickers = parser.extract_tickers(post)
         for ticker in extracted_tickers:
             tickers.append(ticker)
+            post_list.append([ticker,post])
     ticker_occurances = analyzer.count_tickers(tickers)
-    most_common_tickets = analyzer.most_common_tickers(ticker_occurances,my_number_of_tickers_to_include)
-    print(most_common_tickets)
+    most_common_tickers = analyzer.most_common_tickers(ticker_occurances,my_number_of_tickers_to_include)
+    print(analyzer.calculate_net_sentiment(most_common_tickers,post_list))
