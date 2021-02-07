@@ -16,10 +16,24 @@ def load_exlude_list():
             exclude_list.append(word)
 
 
+def format_company_name(text):
+    result = ""
+    remove_variations = ['co','corp','corporation','etf','fund','holdings','inc','incorporated','llc','ltd','trust','reit']
+    stripped_text = re.sub('[^a-zA-Z ]+', '', text)
+    words = stripped_text.split()
+    for word in words:
+        word = word.lower()
+        if word in remove_variations:
+            pass
+        else:
+            result = result + word + " "
+    result = result.rstrip()
+    return result
+
 valid_sybmol_list = []
+company_list = []
 
-
-def load_valid_tickers():
+def load_known_companies():
     todays_date = datetime.today().strftime('%Y-%m-%d')
     url = f"https://api.stocktwits.com/symbol-sync/{todays_date}.csv"
     try:
@@ -30,6 +44,8 @@ def load_valid_tickers():
             my_list = list(cr)
             for row in my_list:
                 valid_sybmol_list.append(row[1])
+                company_list.append(format_company_name(row(2)),row[1])
+
     except requests.exceptions.RequestException as e:
         with open('cached_valid_tickers.csv', newline='') as csvfile:
             reader = csv.reader(csvfile)
@@ -121,4 +137,4 @@ def extract_tickers(text):
 
 
 load_exlude_list()
-load_valid_tickers()
+load_known_companies()
