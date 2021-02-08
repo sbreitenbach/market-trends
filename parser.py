@@ -4,37 +4,10 @@ import logging
 import math
 import re
 import requests
+import spacy
 from datetime import datetime
 
 exclude_list = []
-
-
-def load_exlude_list():
-    with open('exclude_list.txt') as reader:
-        for word in reader:
-            word = word.replace("\n", "")
-            exclude_list.append(word)
-
-
-valid_sybmol_list = []
-
-
-def load_valid_tickers():
-    todays_date = datetime.today().strftime('%Y-%m-%d')
-    url = f"https://api.stocktwits.com/symbol-sync/{todays_date}.csv"
-    try:
-        with requests.Session() as s:
-            download = s.get(url)
-            decoded_content = download.content.decode('utf-8')
-            cr = csv.reader(decoded_content.splitlines(), delimiter=',')
-            my_list = list(cr)
-            for row in my_list:
-                valid_sybmol_list.append(row[1])
-    except requests.exceptions.RequestException as e:
-        with open('cached_valid_tickers.csv', newline='') as csvfile:
-            reader = csv.reader(csvfile)
-            for row in reader:
-                valid_sybmol_list.append(row[1])
 
 
 def preprocess_and_split_text(text):
@@ -51,6 +24,63 @@ def remove_non_uppercase_characters(text):
 def remove_non_uppercase_or_dollar_characters(text):
     result = re.sub('[^A-Z$]+', '', text)
     return result
+
+
+def load_exlude_list():
+    with open('exclude_list.txt') as reader:
+        for word in reader:
+            word = word.replace("\n", "")
+            exclude_list.append(word)
+
+
+def format_company_name(text):
+    result = ""
+    remove_variations = ['co', 'corp', 'corporation', 'etf', 'fund',
+                         'holdings', 'inc', 'incorporated', 'llc', 'ltd', 'trust', 'reit']
+    stripped_text = re.sub('[^a-zA-Z ]+', '', text)
+    words = stripped_text.split()
+    for word in words:
+        word = word.lower()
+        if word in remove_variations:
+            pass
+        else:
+            result = result + word + " "
+    result = result.rstrip()
+    return result
+
+
+valid_sybmol_list = []
+company_name_and_symbol_list = []
+
+
+def load_known_companies():
+    todays_date = datetime.today().strftime('%Y-%m-%d')
+    url = f"https://api.stocktwits.com/symbol-sync/{todays_date}.csv"
+    try:
+        with requests.Session() as s:
+            download = s.get(url)
+            decoded_content = download.content.decode('utf-8')
+            cr = csv.reader(decoded_content.splitlines(), delimiter=',')
+            my_list = list(cr)
+            for row in my_list:
+                symbol = remove_non_uppercase_characters(row[1])
+                company_name = format_company_name(row[2])
+                if(company_name != ""):
+                    company_name_and_symbol = [company_name, symbol]
+
+                valid_sybmol_list.append(symbol)
+                company_name_and_symbol_list.append(company_name_and_symbol)
+
+    except requests.exceptions.RequestException as e:
+        with open('cached_valid_tickers.csv', newline='') as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                symbol = row[1]
+                company_name = format_company_name(row[2])
+                company_name_and_symbol = [company_name, symbol]
+
+                valid_sybmol_list.append(symbol)
+                company_name_and_symbol_list.append(company_name_and_symbol)
 
 
 def is_dollar_sign_match(word):
@@ -80,9 +110,33 @@ def is_symbol_excluded(symbol):
     else:
         return False
 
+
+def match_company_name_to_ticker(text):
+    nlp = spacy.load("en_core_web_sm")
+    matches = []
+
+    doc = nlp(text)
+
+    for ent in doc.ents:
+        if (ent.label_ == "ORG"):
+            possible_company = ent.text
+            logging.debug(f"Found company {possible_company}")
+            possible_company = format_company_name(possible_company)
+            if(possible_company != ""):
+                for company in company_name_and_symbol_list:
+                    company_name = company[0]
+                    symbol = remove_non_uppercase_characters(company[1])
+                    if(possible_company == company_name):
+                        if not (is_symbol_excluded(symbol)):
+                            logging.debug(
+                                f"matched {possible_company} full name {ent.text} with {company_name}")
+                            matches.append(symbol)
+
+    return matches
+
+
 # There is an overlap of stock tickers to common words and terms (e.g. YOLO is a valid ticker)
 # This is results in a large number of false positives being picked up by this parser, and it may filter out some valid tickers
-
 
 def extract_tickers(text):
     matches = []
@@ -121,4 +175,4 @@ def extract_tickers(text):
 
 
 load_exlude_list()
-load_valid_tickers()
+load_known_companies()

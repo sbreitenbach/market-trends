@@ -153,3 +153,13 @@ def test_extract_tickers_with_multiple_matches_and_parentheses():
     a = "Defense Stocks (LMT, RTX, NOC, GD, BA) should I invest in them OR GME?"
     b = parser.extract_tickers(a)
     assert(b == ['LMT', 'RTX', 'NOC', 'GD', 'BA', 'GME'])
+
+def test_format_company_name():
+    a="Foo & Bar Inc."
+    b=parser.format_company_name(a)
+    assert(b=="foo bar")
+
+def test_match_company_name_to_ticker():
+    a="Apple plans to build a self driving car in 2025"
+    b=parser.match_company_name_to_ticker(a)
+    assert(b==['AAPL'])
