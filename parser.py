@@ -4,9 +4,26 @@ import logging
 import math
 import re
 import requests
+import spacy
 from datetime import datetime
 
 exclude_list = []
+
+
+def preprocess_and_split_text(text):
+    text_without_emojis = demoji.replace_with_desc(text, sep=" ")
+    result = text_without_emojis.split()
+    return result
+
+
+def remove_non_uppercase_characters(text):
+    result = re.sub('[^A-Z]+', '', text)
+    return result
+
+
+def remove_non_uppercase_or_dollar_characters(text):
+    result = re.sub('[^A-Z$]+', '', text)
+    return result
 
 
 def load_exlude_list():
@@ -46,9 +63,10 @@ def load_known_companies():
             cr = csv.reader(decoded_content.splitlines(), delimiter=',')
             my_list = list(cr)
             for row in my_list:
-                symbol = row[1]
+                symbol = remove_non_uppercase_characters(row[1])
                 company_name = format_company_name(row[2])
-                company_name_and_symbol = [company_name, symbol]
+                if(company_name != ""):
+                    company_name_and_symbol = [company_name, symbol]
 
                 valid_sybmol_list.append(symbol)
                 company_name_and_symbol_list.append(company_name_and_symbol)
@@ -63,22 +81,6 @@ def load_known_companies():
 
                 valid_sybmol_list.append(symbol)
                 company_name_and_symbol_list.append(company_name_and_symbol)
-
-
-def preprocess_and_split_text(text):
-    text_without_emojis = demoji.replace_with_desc(text, sep=" ")
-    result = text_without_emojis.split()
-    return result
-
-
-def remove_non_uppercase_characters(text):
-    result = re.sub('[^A-Z]+', '', text)
-    return result
-
-
-def remove_non_uppercase_or_dollar_characters(text):
-    result = re.sub('[^A-Z$]+', '', text)
-    return result
 
 
 def is_dollar_sign_match(word):
@@ -108,9 +110,33 @@ def is_symbol_excluded(symbol):
     else:
         return False
 
+
+def match_company_name_to_ticker(text):
+    nlp = spacy.load("en_core_web_sm")
+    matches = []
+
+    doc = nlp(text)
+
+    for ent in doc.ents:
+        if (ent.label_ == "ORG"):
+            possible_company = ent.text
+            logging.debug(f"Found company {possible_company}")
+            possible_company = format_company_name(possible_company)
+            if(possible_company != ""):
+                for company in company_name_and_symbol_list:
+                    company_name = company[0]
+                    symbol = remove_non_uppercase_characters(company[1])
+                    if(possible_company == company_name):
+                        if not (is_symbol_excluded(symbol)):
+                            logging.debug(
+                                f"matched {possible_company} full name {ent.text} with {company_name}")
+                            matches.append(symbol)
+
+    return matches
+
+
 # There is an overlap of stock tickers to common words and terms (e.g. YOLO is a valid ticker)
 # This is results in a large number of false positives being picked up by this parser, and it may filter out some valid tickers
-
 
 def extract_tickers(text):
     matches = []

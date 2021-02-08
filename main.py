@@ -4,7 +4,7 @@ import logging
 import parser
 import praw
 from praw.models import MoreComments
-from requests import RequestException
+from prawcore.exceptions import RequestException,ServerError
 
 ##Begin Config##
 logging.basicConfig(filename='log.log',
@@ -31,9 +31,9 @@ def get_reddit_data(subreddits, number_of_posts, number_of_comments):
                         continue
                     else:
                         submissions.append(comment.body)
-    except RequestException:
-        print("Network error")
-        logging.warning("Network error")
+    except (RequestException,ServerError) as e:
+        print(f"Network error {e}")
+        logging.error(f"Network error")
     return submissions
 
 
@@ -62,14 +62,21 @@ if __name__ == '__main__':
     post_list = []
     count_of_posts = len(posts)
     print(f"Processing data for {count_of_posts} posts...")
+    logging.info(f"Processing data for {count_of_posts} posts...")
     for post in posts:
         extracted_tickers = parser.extract_tickers(post)
         for ticker in extracted_tickers:
             tickers.append(ticker)
             post_list.append([ticker, post])
+        company_name_matches = parser.match_company_name_to_ticker(post)
+        for ticker in company_name_matches:
+            tickers.append(ticker)
+            post_list.append([ticker, post])
     count_of_tickers = len(tickers)
     print(f"Found {count_of_tickers} tickers, starting analysis...")
+    logging.info(f"Found {count_of_tickers} tickers, starting analysis...")
     ticker_occurances = analyzer.count_tickers(tickers)
     most_common_tickers = analyzer.most_common_tickers(
         ticker_occurances, my_number_of_tickers_to_include)
     print(analyzer.calculate_net_sentiment(most_common_tickers, post_list))
+    logging.info(analyzer.calculate_net_sentiment(most_common_tickers, post_list))
