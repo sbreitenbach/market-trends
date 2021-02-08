@@ -158,3 +158,8 @@ def test_format_company_name():
     a="Foo & Bar Inc."
     b=parser.format_company_name(a)
     assert(b=="foo bar")
+
+def test_match_company_name_to_ticker():
+    a="Apple plans to build a self driving car in 2025"
+    b=parser.match_company_name_to_ticker(a)
+    assert(b==['AAPL'])
