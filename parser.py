@@ -1,5 +1,6 @@
 import csv
 import demoji
+import json
 import logging
 import math
 import re
@@ -64,23 +65,28 @@ def load_known_companies():
             my_list = list(cr)
             for row in my_list:
                 symbol = remove_non_uppercase_characters(row[1])
-                company_name = format_company_name(row[2])
-                if(company_name != ""):
-                    company_name_and_symbol = [company_name, symbol]
-
                 valid_sybmol_list.append(symbol)
-                company_name_and_symbol_list.append(company_name_and_symbol)
+
+                if(run_company_match):
+                    company_name = format_company_name(row[2])
+                    if(company_name != ""):
+                        company_name_and_symbol = [company_name, symbol]
+                        company_name_and_symbol_list.append(
+                            company_name_and_symbol)
 
     except requests.exceptions.RequestException as e:
         with open('cached_valid_tickers.csv', newline='') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
-                symbol = row[1]
-                company_name = format_company_name(row[2])
-                company_name_and_symbol = [company_name, symbol]
-
+                symbol = remove_non_uppercase_characters(row[1])
                 valid_sybmol_list.append(symbol)
-                company_name_and_symbol_list.append(company_name_and_symbol)
+
+                if(run_company_match):
+                    company_name = format_company_name(row[2])
+                    if(company_name != ""):
+                        company_name_and_symbol = [company_name, symbol]
+                        company_name_and_symbol_list.append(
+                            company_name_and_symbol)
 
 
 def is_dollar_sign_match(word):
@@ -112,7 +118,6 @@ def is_symbol_excluded(symbol):
 
 
 def match_company_name_to_ticker(text):
-    nlp = spacy.load("en_core_web_sm")
     matches = []
 
     doc = nlp(text)
@@ -174,5 +179,12 @@ def extract_tickers(text):
     return matches
 
 
+with open('publicConfig.json') as json_file:
+    data = json.load(json_file)
+    run_company_match = data["settings"]["run_company_match"]
+
 load_exlude_list()
 load_known_companies()
+
+if(run_company_match):
+    nlp = spacy.load("en_core_web_sm")
