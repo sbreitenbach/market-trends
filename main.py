@@ -4,7 +4,7 @@ import logging
 import parser
 import praw
 from praw.models import MoreComments
-from prawcore.exceptions import RequestException,ServerError
+from prawcore.exceptions import RequestException, ServerError
 
 ##Begin Config##
 logging.basicConfig(filename='log.log',
@@ -31,7 +31,7 @@ def get_reddit_data(subreddits, number_of_posts, number_of_comments):
                         continue
                     else:
                         submissions.append(comment.body)
-    except (RequestException,ServerError) as e:
+    except (RequestException, ServerError) as e:
         print(f"Network error {e}")
         logging.error(f"Network error")
     return submissions
@@ -52,6 +52,7 @@ if __name__ == '__main__':
         my_number_of_posts_to_crawl = data["reddit"]["number_of_posts_to_crawl"]
         my_number_of_comments_to_crawl = data["reddit"]["number_of_comments_to_crawl"]
         my_number_of_tickers_to_include = data["reddit"]["number_of_tickers_to_include"]
+        run_company_match = data["settings"]["run_company_match"]
 
     print("Getting data from reddit...")
     logging.info("Getting data from reddit")
@@ -68,10 +69,11 @@ if __name__ == '__main__':
         for ticker in extracted_tickers:
             tickers.append(ticker)
             post_list.append([ticker, post])
-        company_name_matches = parser.match_company_name_to_ticker(post)
-        for ticker in company_name_matches:
-            tickers.append(ticker)
-            post_list.append([ticker, post])
+        if(run_company_match):
+            company_name_matches = parser.match_company_name_to_ticker(post)
+            for ticker in company_name_matches:
+                tickers.append(ticker)
+                post_list.append([ticker, post])
     count_of_tickers = len(tickers)
     print(f"Found {count_of_tickers} tickers, starting analysis...")
     logging.info(f"Found {count_of_tickers} tickers, starting analysis...")
@@ -79,4 +81,5 @@ if __name__ == '__main__':
     most_common_tickers = analyzer.most_common_tickers(
         ticker_occurances, my_number_of_tickers_to_include)
     print(analyzer.calculate_net_sentiment(most_common_tickers, post_list))
-    logging.info(analyzer.calculate_net_sentiment(most_common_tickers, post_list))
+    logging.info(analyzer.calculate_net_sentiment(
+        most_common_tickers, post_list))

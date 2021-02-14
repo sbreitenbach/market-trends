@@ -11,5 +11,8 @@
         "number_of_posts_to_crawl": 25,
         "number_of_comments_to_crawl": 15,
         "number_of_tickers_to_include": 10
+    },
+    "settings": {
+        "run_company_match": true
     }
 }
