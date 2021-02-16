@@ -1,6 +1,7 @@
 import analyzer
 import json
 import logging
+import multiprocessing
 import parser
 import praw
 from praw.models import MoreComments
@@ -37,6 +38,32 @@ def get_reddit_data(subreddits, number_of_posts, number_of_comments):
     return submissions
 
 
+def ticker_worker(tasks, ticker_results, posts_results):
+    print("starting a ticker worker")
+    while True:
+        post = tasks.get()
+        print(f"working on {post}")
+        if post is None:
+            # Poison pill means shutdown
+            print("recived a poison pill")
+            tasks.task_done()
+            break
+        extracted_tickers = parser.extract_tickers(post)
+        for ticker in extracted_tickers:
+            ticker_results.put(ticker)
+            print("found ticker")
+            ticker_post = [ticker, post]
+            posts_results.put(ticker_post)
+        if(run_company_match):
+            company_name_matches = parser.match_company_name_to_ticker(post)
+            for ticker in company_name_matches:
+                ticker_results.put(ticker)
+                print("found ticker")
+                ticker_post = [ticker, post]
+                posts_results.put(ticker_post)
+        tasks.task_done()
+
+
 if __name__ == '__main__':
     with open('secretConfig.json') as json_file:
         data = json.load(json_file)
@@ -64,16 +91,36 @@ if __name__ == '__main__':
     count_of_posts = len(posts)
     print(f"Processing data for {count_of_posts} posts...")
     logging.info(f"Processing data for {count_of_posts} posts...")
+
+    tasks = multiprocessing.JoinableQueue()
+    ticker_results = multiprocessing.Queue()
+    posts_results = multiprocessing.Queue()
+
+    num_consumers = multiprocessing.cpu_count() * 2
+    print('Creating %d consumers' % num_consumers)
+    consumers = [ticker_worker(tasks, ticker_results, posts_results)
+                 for i in range(num_consumers)]
+    for w in consumers:
+        w.start()
+
     for post in posts:
-        extracted_tickers = parser.extract_tickers(post)
-        for ticker in extracted_tickers:
-            tickers.append(ticker)
-            post_list.append([ticker, post])
-        if(run_company_match):
-            company_name_matches = parser.match_company_name_to_ticker(post)
-            for ticker in company_name_matches:
-                tickers.append(ticker)
-                post_list.append([ticker, post])
+        tasks.put(post)
+
+    print("sending poison pill")   
+    for i in range(num_consumers):
+        tasks.put(None)
+
+    tasks.join()
+
+    print("working on results")
+    while not ticker_results.empty():
+        ticker = ticker_results.get()
+        tickers.append(ticker)
+
+    while not posts_results.empty():
+        ticker_post = posts_results.get()
+        post_list.append(ticker_post)
+
     count_of_tickers = len(tickers)
     print(f"Found {count_of_tickers} tickers, starting analysis...")
     logging.info(f"Found {count_of_tickers} tickers, starting analysis...")
