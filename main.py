@@ -38,30 +38,37 @@ def get_reddit_data(subreddits, number_of_posts, number_of_comments):
     return submissions
 
 
-def ticker_worker(tasks, ticker_results, posts_results):
-    print("starting a ticker worker")
-    while True:
-        post = tasks.get()
-        print(f"working on {post}")
-        if post is None:
-            # Poison pill means shutdown
-            print("recived a poison pill")
-            tasks.task_done()
-            break
-        extracted_tickers = parser.extract_tickers(post)
-        for ticker in extracted_tickers:
-            ticker_results.put(ticker)
-            print("found ticker")
-            ticker_post = [ticker, post]
-            posts_results.put(ticker_post)
-        if(run_company_match):
-            company_name_matches = parser.match_company_name_to_ticker(post)
-            for ticker in company_name_matches:
-                ticker_results.put(ticker)
-                print("found ticker")
+class Ticker_Consumer(multiprocessing.Process):
+
+    def __init__(self, task_queue, ticker_result_queue, posts_result_queue):
+        multiprocessing.Process.__init__(self)
+        self.task_queue = task_queue
+        self.ticker_result_queue = ticker_result_queue
+        self.posts_result_queue = posts_result_queue
+
+    def run(self):
+        proc_name = self.name
+        logging.debug(f"Starting {proc_name}")
+        while True:
+            post = self.task_queue.get()
+            if post is None:
+                logging.debug('%s: Exiting' % proc_name)
+                self.task_queue.task_done()
+                break
+            extracted_tickers = parser.extract_tickers(post)
+            for ticker in extracted_tickers:
+                self.ticker_result_queue.put(ticker)
                 ticker_post = [ticker, post]
-                posts_results.put(ticker_post)
-        tasks.task_done()
+                self.posts_result_queue.put(ticker_post)
+            if(run_company_match):
+                company_name_matches = parser.match_company_name_to_ticker(
+                    post)
+                for ticker in company_name_matches:
+                    self.ticker_result_queue.put(ticker)
+                    ticker_post = [ticker, post]
+                    self.posts_result_queue.put(ticker_post)
+            self.task_queue.task_done()
+        return
 
 
 if __name__ == '__main__':
@@ -96,9 +103,9 @@ if __name__ == '__main__':
     ticker_results = multiprocessing.Queue()
     posts_results = multiprocessing.Queue()
 
-    num_consumers = multiprocessing.cpu_count() * 2
+    num_consumers = multiprocessing.cpu_count() - 1
     print('Creating %d consumers' % num_consumers)
-    consumers = [ticker_worker(tasks, ticker_results, posts_results)
+    consumers = [Ticker_Consumer(tasks, ticker_results, posts_results)
                  for i in range(num_consumers)]
     for w in consumers:
         w.start()
@@ -106,13 +113,12 @@ if __name__ == '__main__':
     for post in posts:
         tasks.put(post)
 
-    print("sending poison pill")   
     for i in range(num_consumers):
         tasks.put(None)
 
     tasks.join()
 
-    print("working on results")
+    print("Collecting tickets on results")
     while not ticker_results.empty():
         ticker = ticker_results.get()
         tickers.append(ticker)
