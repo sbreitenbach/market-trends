@@ -120,7 +120,7 @@ if __name__ == '__main__':
 
     tasks.join()
 
-    print("Collecting tickets on results")
+    print("Collecting tickers from results")
     while not ticker_results.empty():
         ticker = ticker_results.get()
         tickers.append(ticker)
