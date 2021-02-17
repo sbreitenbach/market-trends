@@ -100,8 +100,23 @@ def test_determine_sentiment_negative():
     b = analyzer.determine_sentiment(a)
     assert(b < 0)
 
+def test_trim_post_list():
+    a = [('GME', 2), ('BB', 1)]
+    b = [['GME', positive_phrase],
+         ['GME', positive_phrase],
+         ['PLTR', positive_phrase],
+         ['BB', negative_phrase],
+         ['YOLO', negative_phrase]]
+    c = [['GME', positive_phrase],
+         ['GME', positive_phrase],
+         ['BB', negative_phrase]]
+    
+    d = analyzer.trim_post_list(a,b)
 
-def calculate_net_sentiment():
+    assert(c==d)
+
+
+def test_calculate_net_sentiment():
     a = [('GME', 3), ('BB', 2)]
     b = [['GME', positive_phrase],
          ['GME', positive_phrase],

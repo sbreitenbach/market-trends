@@ -67,6 +67,23 @@ def determine_sentiment(text):
         return VADER_score
 
 
+def trim_post_list(most_common_tickers, post_list):
+    most_common_list = []
+    trimmed_post_list = []
+
+    for i in most_common_tickers:
+        common_ticker = i[0]
+        most_common_list.append(common_ticker)
+
+    for post in post_list:
+        post_ticker = post[0]
+        post_text = post[1]
+        if post_ticker in most_common_list:
+            ticker_post = [post_ticker, post_text]
+            trimmed_post_list.append(ticker_post)
+    
+    return trimmed_post_list
+
 def calculate_net_sentiment(most_common_tickers, post_list):
     result = []
     for i in most_common_tickers:

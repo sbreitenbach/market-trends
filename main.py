@@ -38,7 +38,7 @@ def get_reddit_data(subreddits, number_of_posts, number_of_comments):
     return submissions
 
 
-class Ticker_Consumer(multiprocessing.Process):
+class Ticker_Worker(multiprocessing.Process):
 
     def __init__(self, task_queue, ticker_result_queue, posts_result_queue):
         multiprocessing.Process.__init__(self)
@@ -103,17 +103,19 @@ if __name__ == '__main__':
     ticker_results = multiprocessing.Queue()
     posts_results = multiprocessing.Queue()
 
-    num_consumers = multiprocessing.cpu_count() - 1
-    print('Creating %d consumers' % num_consumers)
-    consumers = [Ticker_Consumer(tasks, ticker_results, posts_results)
-                 for i in range(num_consumers)]
+    num_workers = multiprocessing.cpu_count() - 1
+    if (num_workers<1):
+         num_workers = 1
+    print('Creating %d workers' % num_workers)
+    consumers = [Ticker_Worker(tasks, ticker_results, posts_results)
+                 for i in range(num_workers)]
     for w in consumers:
         w.start()
 
     for post in posts:
         tasks.put(post)
 
-    for i in range(num_consumers):
+    for i in range(num_workers):
         tasks.put(None)
 
     tasks.join()
@@ -133,6 +135,8 @@ if __name__ == '__main__':
     ticker_occurances = analyzer.count_tickers(tickers)
     most_common_tickers = analyzer.most_common_tickers(
         ticker_occurances, my_number_of_tickers_to_include)
+    
+    post_list = analyzer.trim_post_list(most_common_tickers, post_list)
     print(analyzer.calculate_net_sentiment(most_common_tickers, post_list))
     logging.info(analyzer.calculate_net_sentiment(
         most_common_tickers, post_list))

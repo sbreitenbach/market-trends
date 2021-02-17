@@ -5,7 +5,6 @@ import logging
 import math
 import re
 import requests
-import spacy
 from datetime import datetime
 
 exclude_list = []
@@ -42,9 +41,7 @@ def format_company_name(text):
     words = stripped_text.split()
     for word in words:
         word = word.lower()
-        if word in remove_variations:
-            pass
-        else:
+        if word not in remove_variations:
             result = result + word + " "
     result = result.rstrip()
     return result
@@ -187,4 +184,5 @@ load_exlude_list()
 load_known_companies()
 
 if(run_company_match):
+    import spacy
     nlp = spacy.load("en_core_web_sm")
