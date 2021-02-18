@@ -114,29 +114,6 @@ def is_symbol_excluded(symbol):
         return False
 
 
-def match_company_name_to_ticker(text):
-    matches = []
-
-    doc = nlp(text)
-
-    for ent in doc.ents:
-        if (ent.label_ == "ORG"):
-            possible_company = ent.text
-            logging.debug(f"Found company {possible_company}")
-            possible_company = format_company_name(possible_company)
-            if(possible_company != ""):
-                for company in company_name_and_symbol_list:
-                    company_name = company[0]
-                    symbol = remove_non_uppercase_characters(company[1])
-                    if(possible_company == company_name):
-                        if not (is_symbol_excluded(symbol)):
-                            logging.debug(
-                                f"matched {possible_company} full name {ent.text} with {company_name}")
-                            matches.append(symbol)
-
-    return matches
-
-
 # There is an overlap of stock tickers to common words and terms (e.g. YOLO is a valid ticker)
 # This is results in a large number of false positives being picked up by this parser, and it may filter out some valid tickers
 
@@ -176,9 +153,18 @@ def extract_tickers(text):
     return matches
 
 
+def is_image(url):
+    image_types = ['.jpg', '.jpeg', '.png']
+    for image_type in image_types:
+        if url.endswith(image_type):
+            return True
+    return False
+
+
 with open('publicConfig.json') as json_file:
     data = json.load(json_file)
     run_company_match = data["settings"]["run_company_match"]
+    run_image_ocr = data["settings"]["run_image_ocr"]
 
 load_exlude_list()
 load_known_companies()
@@ -186,3 +172,40 @@ load_known_companies()
 if(run_company_match):
     import spacy
     nlp = spacy.load("en_core_web_sm")
+
+    def match_company_name_to_ticker(text):
+        matches = []
+
+        doc = nlp(text)
+
+        for ent in doc.ents:
+            if (ent.label_ == "ORG"):
+                possible_company = ent.text
+                logging.debug(f"Found company {possible_company}")
+                possible_company = format_company_name(possible_company)
+                if(possible_company != ""):
+                    for company in company_name_and_symbol_list:
+                        company_name = company[0]
+                        symbol = remove_non_uppercase_characters(company[1])
+                        if(possible_company == company_name):
+                            if not (is_symbol_excluded(symbol)):
+                                logging.debug(
+                                    f"matched {possible_company} full name {ent.text} with {company_name}")
+                                matches.append(symbol)
+
+        return matches
+
+if(run_image_ocr):
+    import io
+    from PIL import Image
+    import pytesseract
+
+    def extract_text_from_image(url):
+        result = ""
+        try:
+            response = requests.get(url)
+            img = Image.open(io.BytesIO(response.content))
+            result = pytesseract.image_to_string(img)
+        except requests.exceptions.RequestException as e:
+            logging.warning(f"Encountered network exception {e}")
+        return result

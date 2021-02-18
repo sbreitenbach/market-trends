@@ -13,6 +13,7 @@
         "number_of_tickers_to_include": 10
     },
     "settings": {
-        "run_company_match": true
+        "run_company_match": true,
+        "run_image_ocr": true
     }
 }
