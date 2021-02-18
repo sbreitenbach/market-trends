@@ -170,10 +170,10 @@ def test_match_company_name_to_ticker():
 def test_is_image_true():
     a = "foo.bar/image.png"
     b = parser.is_image(a)
-    assert(a == True)
+    assert(b == True)
 
 
 def test_is_image_false():
     a = "foo.bar/home"
     b = parser.is_image(a)
-    assert(a == False)
+    assert(b == False)
