@@ -1,5 +1,6 @@
 demoji==0.4.0
 praw==7.1.4
+pytesseract==0.3.7
 pytest==4.4.0
 requests==2.21.0
 spacy>=3.0.0,<4.0.0

@@ -25,6 +25,10 @@ def get_reddit_data(subreddits, number_of_posts, number_of_comments):
         for subreddit in subreddits:
             for submission in reddit.subreddit(subreddit).hot(limit=number_of_posts):
                 submissions.append(submission.title)
+                if not(submission.is_self):
+                    if(run_image_ocr and parser.is_image(submission.url)):
+                        submissions.append(
+                            parser.extract_text_from_image(submission.url))
                 submissions.append(submission.selftext)
                 submission.comments.replace_more(limit=number_of_comments)
                 for comment in submission.comments.list():
@@ -87,6 +91,7 @@ if __name__ == '__main__':
         my_number_of_comments_to_crawl = data["reddit"]["number_of_comments_to_crawl"]
         my_number_of_tickers_to_include = data["reddit"]["number_of_tickers_to_include"]
         run_company_match = data["settings"]["run_company_match"]
+        run_image_ocr = data["settings"]["run_image_ocr"]
 
     print("Getting data from reddit...")
     logging.info("Getting data from reddit")
@@ -104,8 +109,8 @@ if __name__ == '__main__':
     posts_results = multiprocessing.Queue()
 
     num_workers = multiprocessing.cpu_count() - 1
-    if (num_workers<1):
-         num_workers = 1
+    if (num_workers < 1):
+        num_workers = 1
     print('Creating %d workers' % num_workers)
     consumers = [Ticker_Worker(tasks, ticker_results, posts_results)
                  for i in range(num_workers)]
@@ -135,7 +140,7 @@ if __name__ == '__main__':
     ticker_occurances = analyzer.count_tickers(tickers)
     most_common_tickers = analyzer.most_common_tickers(
         ticker_occurances, my_number_of_tickers_to_include)
-    
+
     post_list = analyzer.trim_post_list(most_common_tickers, post_list)
     print(analyzer.calculate_net_sentiment(most_common_tickers, post_list))
     logging.info(analyzer.calculate_net_sentiment(

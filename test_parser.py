@@ -154,12 +154,26 @@ def test_extract_tickers_with_multiple_matches_and_parentheses():
     b = parser.extract_tickers(a)
     assert(b == ['LMT', 'RTX', 'NOC', 'GD', 'BA', 'GME'])
 
+
 def test_format_company_name():
-    a="Foo & Bar Inc."
-    b=parser.format_company_name(a)
-    assert(b=="foo bar")
+    a = "Foo & Bar Inc."
+    b = parser.format_company_name(a)
+    assert(b == "foo bar")
+
 
 def test_match_company_name_to_ticker():
-    a="Apple plans to build a self driving car in 2025"
-    b=parser.match_company_name_to_ticker(a)
-    assert(b==['AAPL'])
+    a = "Apple plans to build a self driving car in 2025"
+    b = parser.match_company_name_to_ticker(a)
+    assert(b == ['AAPL'])
+
+
+def test_is_image_true():
+    a = "foo.bar/image.png"
+    b = parser.is_image(a)
+    assert(a == True)
+
+
+def test_is_image_false():
+    a = "foo.bar/home"
+    b = parser.is_image(a)
+    assert(a == False)
