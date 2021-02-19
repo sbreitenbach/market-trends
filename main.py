@@ -4,6 +4,7 @@ import logging
 import multiprocessing
 import parser
 import praw
+from alpha_vantage.timeseries import TimeSeries
 from praw.models import MoreComments
 from prawcore.exceptions import RequestException, ServerError
 
@@ -41,6 +42,10 @@ def get_reddit_data(subreddits, number_of_posts, number_of_comments):
         logging.error(f"Network error")
     return submissions
 
+def get_pricing_data(key,symbol):
+    ts = TimeSeries(key=key)
+    data = ts.get_quote_endpoint('GME')
+    return data
 
 class Ticker_Worker(multiprocessing.Process):
 
@@ -82,6 +87,7 @@ if __name__ == '__main__':
         my_client_secret = data["reddit"]["client_secret"]
         my_password = data["reddit"]["password"]
         my_username = data["reddit"]["username"]
+        my_alpha_vantage_key = data["alpha_vantage"]["key"]
 
     with open('publicConfig.json') as json_file:
         data = json.load(json_file)
