@@ -1,6 +1,3 @@
-print("hello world!")
-
-
 class Post:
     def __init__(self, id, text, upvotes, type):
         self.id = id
