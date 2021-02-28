@@ -4,6 +4,7 @@ import logging
 import multiprocessing
 import parser
 import praw
+from post import Post
 from praw.models import MoreComments
 from prawcore.exceptions import RequestException, ServerError
 
@@ -17,29 +18,38 @@ logging.basicConfig(filename='log.log',
 
 
 def get_reddit_data(subreddits, number_of_posts, number_of_comments):
-    submissions = []
+    posts = []
+
     reddit = praw.Reddit(client_id=my_client_id, client_secret=my_client_secret,
                          password=my_password, user_agent=my_user_agent,
                          username=my_username)
     try:
         for subreddit in subreddits:
             for submission in reddit.subreddit(subreddit).hot(limit=number_of_posts):
-                submissions.append(submission.title)
-                if not(submission.is_self):
-                    if(run_image_ocr and parser.is_image(submission.url)):
-                        submissions.append(
-                            parser.extract_text_from_image(submission.url))
-                submissions.append(submission.selftext)
+                if (submission.is_self):
+                    submission_text = submission.title + submission.selftext
+                elif(run_image_ocr and parser.is_image(submission.url)):
+                    submission_text = submission.title + \
+                        parser.extract_text_from_image(submission.url)
+                else:
+                    submission_text = submission.title
+                thread = Post(submission.id, submission_text,
+                              submission.score, "thread")
+                thread.url = submission.url
+                thread.title = submission.title
+                posts.append(thread)
                 submission.comments.replace_more(limit=number_of_comments)
                 for comment in submission.comments.list():
                     if isinstance(comment, MoreComments):
                         continue
                     else:
-                        submissions.append(comment.body)
+                        comment = Post(comment.id, comment.body,
+                                       comment.score, "comment")
+                        posts.append(comment)
     except (RequestException, ServerError) as e:
         print(f"Network error {e}")
         logging.error(f"Network error")
-    return submissions
+    return posts
 
 
 class Ticker_Worker(multiprocessing.Process):
@@ -118,7 +128,7 @@ if __name__ == '__main__':
         w.start()
 
     for post in posts:
-        tasks.put(post)
+        tasks.put(post.text)
 
     for i in range(num_workers):
         tasks.put(None)
