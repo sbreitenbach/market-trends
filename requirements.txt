@@ -2,7 +2,7 @@ demoji==0.4.0
 praw==7.2.0
 pytesseract==0.3.7
 pytest==4.4.0
-requests==2.21.0
+requests==2.31.0
 spacy>=3.0.0,<4.0.0
 https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0.tar.gz#egg=en_core_web_sm
 vaderSentiment==3.3.2
